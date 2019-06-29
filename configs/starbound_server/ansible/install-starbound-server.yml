@@ -13,14 +13,18 @@
   vars_prompt:
     - name: steam_username
       prompt: "What is your Steam username?"
-      private: yes
+      private: no
 
     - name: steam_password
       prompt: "What is your Steam password?"
       private: yes
 
+    - name: starbound_admin_password
+      prompt: "What would you like to set as the Starbound server admin password?"
+      private: yes
+
     - name: steam_mfa_code
-      prompt: "What is your Steam 2-factor-auth code? (Use a new one as it may expire too quickly)"
+      prompt: "What is your Steam 2-factor-auth code? (Use a fresh one as it may expire too quickly)"
       private: yes
 
   tasks:
@@ -35,8 +39,36 @@
       block:
         - name: run install script
           command: /usr/games/steamcmd +runscript "{{ install_script }}"
+          args:
+            creates: "{{ server_install_dir }}/linux/starbound_server"
           become_user: "{{ steam_user.name }}"
       always:
         - file:
             path: "{{ install_script }}"
             state: absent
+
+    - name: create Starbound server config directory
+      file:
+        path: "{{ server_install_dir }}/storage"
+        state: directory
+        owner: "{{ steam_user.name }}"
+
+    - name: template Starbound server config
+      template:
+        src: ./templates/starbound_server.config.j2
+        dest: "{{ server_install_dir }}/storage/starbound_server.config"
+        owner: "{{ steam_user.name }}"
+
+    - name: template systemd service unit
+      template:
+        src: ./templates/starbound-server.service.j2
+        dest: /etc/systemd/system/starbound-server.service
+        owner: "{{ steam_user.name }}"
+        mode: 0600
+
+    - name: start Starbound server service
+      systemd:
+        name: starbound-server
+        enabled: yes
+        daemon_reload: yes
+        state: started
