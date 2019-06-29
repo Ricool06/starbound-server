@@ -2,8 +2,13 @@
 **/.terraform/*
 
 # .tfstate files
-*.tfstate
-*.tfstate.*
+**/*.tfstate
+**/*.tfstate.*
 
 # .tfvars files
-*.tfvars
+**/secret*.tfvars
+
+# Crash log files
+crash.log
+
+.vscode/
