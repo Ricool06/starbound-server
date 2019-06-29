@@ -12,3 +12,4 @@
 crash.log
 
 .vscode/
+**/*.pem

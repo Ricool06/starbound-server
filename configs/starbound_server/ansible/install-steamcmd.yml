@@ -1,0 +1,38 @@
+---
+- hosts: all
+  become: true
+
+  vars:
+    steam_user:
+      name: steam
+      home_dir: /home/steam
+    server_install_dir: "{{ steam_user.home_dir }}/starbound_server"
+    install_script: "{{ server_install_dir }}/install-script.txt"
+
+  tasks:
+    - name: create steam user
+      user:
+        name: "{{ steam_user.name }}"
+        home: "{{ steam_user.home_dir }}"
+
+    - name: enable multiarch packages to be installed (so apt-get can find steamcmd)
+      command: dpkg --add-architecture i386
+    
+    - name: pre-accept steamcmd license agreement
+      debconf:
+        name: steamcmd
+        value: "I AGREE"
+        vtype: select
+        question: steam/question
+
+    - name: install steamcmd
+      apt:
+        update_cache: yes
+        name: steamcmd
+
+    - name: create server install directory
+      file:
+        path: "{{ server_install_dir }}"
+        state: directory
+        owner: "{{ steam_user.name }}"
+

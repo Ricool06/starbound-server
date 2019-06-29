@@ -1,0 +1,42 @@
+---
+
+- hosts: all
+  become: true
+
+  vars:
+    steam_user:
+      name: steam
+      home_dir: /home/steam
+    server_install_dir: "{{ steam_user.home_dir }}/starbound_server"
+    install_script: "{{ server_install_dir }}/install-script.txt"
+
+  vars_prompt:
+    - name: steam_username
+      prompt: "What is your Steam username?"
+      private: yes
+
+    - name: steam_password
+      prompt: "What is your Steam password?"
+      private: yes
+
+    - name: steam_mfa_code
+      prompt: "What is your Steam 2-factor-auth code? (Use a new one as it may expire too quickly)"
+      private: yes
+
+  tasks:
+    - name: template out steamcmd script
+      template:
+        src: ./templates/install-script.txt.j2
+        dest: "{{ install_script }}"
+        owner: "{{ steam_user.name }}"
+        mode: 0600
+
+    - name: install Starbound server with steamcmd
+      block:
+        - name: run install script
+          command: /usr/games/steamcmd +runscript "{{ install_script }}"
+          become_user: "{{ steam_user.name }}"
+      always:
+        - file:
+            path: "{{ install_script }}"
+            state: absent
