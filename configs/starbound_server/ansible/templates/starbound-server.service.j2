@@ -1,0 +1,13 @@
+[Unit]
+Description=StarboundServer
+After=network.target
+[Service]
+WorkingDirectory={{ server_install_dir }}/linux
+User={{ steam_user.name }}
+Type=simple
+ExecStart={{ server_install_dir }}/linux/starbound_server
+RestartSec=15
+Restart=always
+KillSignal=SIGINT
+[Install]
+WantedBy=multi-user.target
