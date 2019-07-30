@@ -50,7 +50,7 @@ resource "aws_security_group" "starbound_server" {
 
 resource "aws_instance" "ec2" {
   ami = "${data.aws_ami.latest_ami_suitable_for_t2.id}"
-  instance_type = "t2.micro"
+  instance_type = "t2.small"
   key_name = "${aws_key_pair.ssh.key_name}"
 
   security_groups = ["${aws_security_group.starbound_server.name}"]
